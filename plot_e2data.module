@@ -1,0 +1,120 @@
+ <?php
+///Se ingresas datos de entidad, entrega array de fechas y options
+
+function plot_e2data($entity_type,$entity_id,$format){
+	$date_format=$format[0];
+	$USER_UTC=$format[1];
+	$GMT=$format[2];
+	$campos=array(
+			'db'=>'field_database',
+			'alternativa'=>'field_alternativa',
+			'fechas'=>'field_fechas',
+			'contar'=>'field_c_mo_contar',
+			'cantidad'=>'field_cantidad_hacia_atras',
+	);
+	$array_node=entity_load($entity_type,$entity_id);
+	$entidad=array_pop($array_node);
+	//Contiene database y tabla
+	$campo_db=$campos['db'];
+	$entity_field =field_get_items($entity_type,$entidad,$campo_db);
+	//obtiene nombre db
+	$tid_database=$entity_field[0]['tid'];
+	//obtiene nombre de tabla
+	$tid_tabla=$entity_field[1]['tid'];
+	//obtiene nombre de medida
+	$tid_medida=$entity_field[2]['tid'];
+	$database=taxonomy_term_load($tid_database)->name;
+	$tabla=taxonomy_term_load($tid_tabla)->name;
+	$nombre_medida=taxonomy_term_load($tid_medida)->name;
+	$pre_medida=array_pop(taxonomy_term_load($tid_medida)->field_nombre_de_columna);
+	$medida=$pre_medida[0]['value'];
+	//arreglo que contiene los datos de tabla y columna a rescatar
+	//a futuro se debe ajustar para varios parámetros
+	$medicion=array(
+         'db'=>$database,
+         'tabla'=>$tabla,
+         'medida'=>$medida,
+        );
+	$campo_alternativa=$campos['alternativa'];
+	$pre_field_alternativa=field_get_items($entity_type,$entidad,$campo_alternativa);
+	$field_alternativa=$pre_field_alternativa[0]['value'];
+	//Se procesan los datos para generar consulta.
+	//Si una alternativa es Fechas Fijas se obtienen las fechas
+	//si otra alternativa es Hacia atrás se obtienen los dias a obtener
+	switch ($field_alternativa){
+		case "Fechas fijas":
+			$modo=1;
+			$campo_fechas=$campos['fechas'];
+			$pre_field_fechas=field_get_items($entity_type,$entidad,$campo_fechas);
+			//Se obtienen los campos de las fechas como string "d/m/Y H:m:s"
+			$text_fecha1=$pre_field_fechas[0]['value'];
+			$text_fecha2=$pre_field_fechas[0]['value2'];
+			$date_fecha1=DateTime::createfromFormat($date_format,$text_fecha1,$GMT);
+			$date_fecha1->setTimezone($GMT);
+			$date_fecha2=DateTime::createfromFormat($date_format,$text_fecha2,$GMT);
+			$date_fecha2->setTimezone($GMT);
+			//Es la timezone del usuario que fija la vista-->prioritario sobre la timezone del usuario
+			$timezone=$pre_field_fechas[0]['timezone'];
+			$timezone_db=$pre_field_fechas[0]['timezone_db'];
+			$cantidad=0;
+			break;
+		case "Hacia atrás";
+		$modo=2;
+		$campo_contar=$campos['contar'];
+		$pre_field_contar=field_get_items($entity_type,$entidad,$campo_contar);
+		$field_contar=$pre_field_contar[0]['value'];
+		switch ($field_contar){
+			case "Hora":
+				$tipo=1;
+				$multiplo_dia=1/24;
+				break;
+			case "Día":
+				$tipo=2;
+				$multiplo_dia=1;
+				break;
+			case "Semana":
+				$tipo=3;
+				$multiplo_dia=7;
+				break;
+			case "Mes":
+				$tipo=4;
+				$multiplo_dia=30;
+				break;
+			case "Año":
+				$tipo=5;
+				$multiplo_dia=365;
+				break;
+			default:
+				$tipo=6;
+				$multiplo_dia=1;
+				break;
+		}
+		$campo_contar_atras=$campos['cantidad'];
+		$pre_field_contar_atras=field_get_items($entity_type,$entidad,$campo_contar_atras);
+		$field_contar_atras=$pre_field_contar_atras[0]['value'];
+		$dias_atras=$field_contar_atras*$multiplo_dia;
+		$cantidad=$dias_atras;
+		//obtener fecha hoy
+		$hoy= date($date_format);
+		//string date ( string $format [, int $timestamp = time() ] )
+		$today_UTC=DateTime::createfromFormat($date_format,$hoy,$USER_UTC);
+		//string gmdate ( string $format [, int $timestamp = time() ] )
+		$today_GMT=$today_UTC;
+		$today_GMT->setTimezone($GMT);
+		//restar dias_atras a fecha hoy
+		//obtener dia a partir del cual se hace la consulta
+		$date_fecha1='';
+		$date_fecha2=$today_UTC;
+		$date_fecha2->setTimezone($GMT);
+		break;
+	}
+	$fecha1=$date_fecha1;
+	$fecha2=$date_fecha2;
+	//Generar arreglo de entrada para procesar fechas
+	
+	$fechas_in=array($fecha1,$fecha2);
+	$options=array($modo,$tipo,$cantidad);
+	
+	return array($medicion,$fechas_in,$options);
+
+}

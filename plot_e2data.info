@@ -1,0 +1,5 @@
+name = Plot Entity 2 Data
+description = Extrae los datos de una entidad nodo y entrega la información para generar los filtros
+core = 7.x
+package = "Data Convert"
+version = "7.x-1.0" 
