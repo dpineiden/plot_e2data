@@ -44,6 +44,7 @@ function plot_e2data($entity_type,$entity_id,$format){
 	switch ($field_alternativa){
 		case "Fechas fijas":
 			$modo=1;
+			$date_format="Y-m-d H:i:s";//Formato de fecha cambia cuando se extrae de campo date
 			$campo_fechas=$campos['fechas'];
 			$pre_field_fechas=field_get_items($entity_type,$entidad,$campo_fechas);
 			//Se obtienen los campos de las fechas como string "d/m/Y H:m:s"
