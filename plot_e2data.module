@@ -58,6 +58,7 @@ function plot_e2data($entity_type,$entity_id,$format){
 			$timezone=$pre_field_fechas[0]['timezone'];
 			$timezone_db=$pre_field_fechas[0]['timezone_db'];
 			$cantidad=0;
+			$tipo=0;
 			break;
 		case "Hacia atrás";
 		$modo=2;
