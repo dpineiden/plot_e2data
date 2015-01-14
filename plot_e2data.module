@@ -13,7 +13,7 @@ function plot_e2data($entity_type,$entity_id,$format){
 			'cantidad'=>'field_cantidad_hacia_atras',
 	);
 	$array_node=entity_load($entity_type,$entity_id);
-	if (count()>=1){
+	if (count($array_node)>=1){
 	$entidad=array_pop($array_node);
 	//Contiene database y tabla
 	$campo_db=$campos['db'];
