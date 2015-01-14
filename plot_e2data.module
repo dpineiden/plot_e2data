@@ -13,7 +13,6 @@ function plot_e2data($entity_type,$entity_id,$format){
 			'cantidad'=>'field_cantidad_hacia_atras',
 	);
 	$array_node=entity_load($entity_type,$entity_id);
-	if (count($array_node)>=1){
 	$entidad=array_pop($array_node);
 	//Contiene database y tabla
 	$campo_db=$campos['db'];
@@ -117,12 +116,7 @@ function plot_e2data($entity_type,$entity_id,$format){
 	
 	$fechas_in=array($fecha1,$fecha2);
 	$options=array($modo,$tipo,$cantidad);
-	}
-else{
-$medicion=0;
-$fechas_in=array(0,0);
-$options=array(1,1,1);
-}	
+	
 	return array($medicion,$fechas_in,$options);
 
 }
